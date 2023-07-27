@@ -5,7 +5,11 @@ namespace gallery.data.Repository
     public interface IGalleryDbRepository
     {
         List<ItemModel> GetAllItems();
-        List<ItemModel> GetItem(int id);
+        ItemModel? GetItem(int id);
+
+        bool CreateItem(ItemModel item);
+        bool DeleteItem(int id);
+        bool UpdateItem(ItemModel item);
 
         List<ItemModel> GetFakeItems();
     }

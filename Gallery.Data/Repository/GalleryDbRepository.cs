@@ -17,6 +17,31 @@ public class GalleryDbRepository : IGalleryDbRepository
         _connectionString = configuration.GetConnectionString("gallery") ?? "";
     }
 
+    public bool CreateItem(ItemModel item)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+
+        var query = string.Format(
+            ItemQueries.AddItemFormatQuery,
+            item.Name,
+            item.Description,
+            item.PictureUrl
+        );
+        var updatedItemCount = connection.Execute(query);
+
+        return updatedItemCount > 0;
+    }
+
+    public bool DeleteItem(int id)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+
+        var query = string.Format(ItemQueries.RemoveItemFormatQuery, id);
+        var updatedItemCount = connection.Execute(query);
+
+        return updatedItemCount > 0;
+    }
+
     public List<ItemModel> GetAllItems()
     {
         using var connection = new NpgsqlConnection(_connectionString);
@@ -26,13 +51,34 @@ public class GalleryDbRepository : IGalleryDbRepository
 
     public List<ItemModel> GetFakeItems()
     {
-        return Enumerable.Range(1, 10).Select(idx => new ItemModel { Id= idx, Name = $"item_{idx}" }).ToList();
+        return Enumerable
+            .Range(1, 10)
+            .Select(idx => new ItemModel { Id = idx, Name = $"item_{idx}" })
+            .ToList();
     }
 
-    public List<ItemModel> GetItem(int id)
+    public ItemModel? GetItem(int id)
     {
         using var connection = new NpgsqlConnection(_connectionString);
 
-        return connection.Query<ItemModel>(string.Format(ItemQueries.GetItemFormatQuery, id)).ToList();
+        return connection.QuerySingle<ItemModel?>(
+            string.Format(ItemQueries.GetItemFormatQuery, id)
+        );
+    }
+
+    public bool UpdateItem(ItemModel item)
+    {
+        using var connection = new NpgsqlConnection(_connectionString);
+
+        var query = string.Format(
+            ItemQueries.UpdateItemFormatQuery,
+            item.Name,
+            item.Description,
+            item.PictureUrl,
+            item.Id
+        );
+        var updatedItemCount = connection.Execute(query);
+
+        return updatedItemCount > 0;
     }
 }

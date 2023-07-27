@@ -21,23 +21,59 @@ namespace gallery.api.Controllers
 
         [HttpGet]
         [Route("")]
-        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(IEnumerable<ItemModel>), StatusCodes.Status200OK)]
         public IEnumerable<ItemModel> List()
         {
-            return _repository.GetFakeItems();
+            return _repository.GetAllItems();
         }
 
         [HttpGet]
         [Route("{itemId:int}")]
-        [ProducesResponseType(typeof(ItemModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(NotFoundResult), StatusCodes.Status404NotFound)]
-        public IActionResult Get(int itemId)
+        public IActionResult GetFake(int itemId)
         {
             var foundItem = _repository.GetFakeItems().Find((item) => item.Id == itemId);
 
             return foundItem != null ? Ok(foundItem) : NotFound();
+        }
+
+        [HttpGet]
+        [Route("Fake/{itemId:int}")]
+        public IActionResult Get(int itemId)
+        {
+            var foundItem = _repository.GetItem(itemId);
+
+            return foundItem != null ? Ok(foundItem) : NotFound();
+        }
+
+        [HttpPost]
+        public ActionResult Post(ItemModel item)
+        {
+            try
+            {
+                var isSuccess = _repository.CreateItem(item);
+                return isSuccess ? Ok() : BadRequest("Unable to create item.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, ex.InnerException);
+                return BadRequest("Unable to create item.");
+            }
+        }
+
+        [HttpPut]
+        public ActionResult Put(ItemModel item)
+        {
+            var isSuccess = _repository.UpdateItem(item);
+
+            return isSuccess ? Ok() : BadRequest("Nothing to update.");
+        }
+
+        [HttpDelete]
+        [Route("{itemId:int}")]
+        public ActionResult Delete(int itemId)
+        {
+            var isSuccess = _repository.DeleteItem(itemId);
+
+            return isSuccess ? Ok() : NotFound();
         }
     }
 }
